@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "541351578974",
+    "project_id": "kaktus-35948",
+    "storage_bucket": "kaktus-35948.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541351578974:android:d48e23f78ea63cb57d93cf",
+        "android_client_info": {
+          "package_name": "com.kaktus.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCU6h2EuHmt7BiUdaikUZx_ejkJOQMCiAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
