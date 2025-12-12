@@ -50,6 +50,43 @@ class KaktusViewModel : ViewModel() {
         }
     }
 
+    // Funzione per salvare un nuovo evento su Firebase
+    fun saveEvent(
+        title: String,
+        date: String,
+        location: String,
+        imageUrl: String,
+        mapsLink: String,
+        ticketLink: String,
+        onSuccess: () -> Unit // Cosa fare quando ha finito (tornare indietro)
+    ) {
+        _isLoading.value = true
+
+        // Creiamo l'oggetto Evento
+        val newEvent = hashMapOf(
+            "title" to title,
+            "date" to date,
+            "location" to location,
+            "imageUrl" to imageUrl,
+            "mapsLink" to mapsLink,
+            "ticketLink" to ticketLink,
+            "votes" to 0
+        )
+
+        // Spediamo a Firebase
+        db.collection("events")
+            .add(newEvent)
+            .addOnSuccessListener {
+                _isLoading.value = false
+                onSuccess() // Avvisa la schermata che abbiamo finito
+            }
+            .addOnFailureListener { e ->
+                _isLoading.value = false
+                // Qui potremmo gestire l'errore
+                println("Errore salvataggio: $e")
+            }
+    }
+
     // Funzione per aggiungere un voto (la useremo dopo)
     fun voteEvent(eventId: String) {
         // Incrementa il voto di 1
