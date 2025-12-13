@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -17,22 +17,32 @@ import androidx.compose.ui.unit.sp
 import com.kaktus.app.ui.theme.KaktusBeige
 import com.kaktus.app.ui.theme.KaktusGreen
 import com.kaktus.app.ui.theme.KaktusLightBeige
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEventScreen(
     viewModel: KaktusViewModel,
-    onBackClick: () -> Unit // Per tornare indietro senza salvare
+    onBackClick: () -> Unit
 ) {
     // Variabili per i campi di testo
     var title by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") } // L'utente incollerà un link URL per ora
+    var imageUrl by remember { mutableStateOf("") }
     var mapsLink by remember { mutableStateOf("") }
     var ticketLink by remember { mutableStateOf("") }
 
+    // Variabili per il CALENDARIO
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
     val isLoading by viewModel.isLoading.collectAsState()
+
+    // Logica per formattare la data (da millisecondi a testo "gg/mm/aaaa")
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     Scaffold(
         topBar = {
@@ -53,15 +63,35 @@ fun AddEventScreen(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()), // Permette di scorrere se la tastiera copre
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
             Text("Dettagli Evento", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = KaktusGreen)
 
-            // CAMPI DI TESTO
+            // Titolo
             KaktusTextField(value = title, onValueChange = { title = it }, label = "Titolo (es. Jazz Festival)")
-            KaktusTextField(value = date, onValueChange = { date = it }, label = "Data (es. 12/08/2025)")
+
+            // --- CAMPO DATA CON CALENDARIO ---
+            OutlinedTextField(
+                value = date,
+                onValueChange = { }, // Non facciamo nulla se l'utente prova a scrivere
+                label = { Text("Data") },
+                readOnly = true, // L'utente non può digitare a mano
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Scegli Data", tint = KaktusGreen)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().background(KaktusLightBeige),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = KaktusGreen,
+                    focusedLabelColor = KaktusGreen,
+                    cursorColor = KaktusGreen
+                )
+            )
+
+            // Luogo
             KaktusTextField(value = location, onValueChange = { location = it }, label = "Luogo (es. Maspalomas)")
 
             Divider(color = KaktusGreen, thickness = 1.dp)
@@ -79,7 +109,7 @@ fun AddEventScreen(
                     if (title.isNotEmpty() && date.isNotEmpty()) {
                         viewModel.saveEvent(
                             title, date, location, imageUrl, mapsLink, ticketLink,
-                            onSuccess = { onBackClick() } // Quando salva, torna alla Home
+                            onSuccess = { onBackClick() }
                         )
                     }
                 },
@@ -94,10 +124,32 @@ fun AddEventScreen(
                 }
             }
         }
+
+        // --- IL COMPONENTE DIALOGO CALENDARIO ---
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                date = dateFormatter.format(Date(millis))
+                            }
+                            showDatePicker = false
+                        }
+                    ) { Text("OK", color = KaktusGreen) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Annulla", color = KaktusGreen) }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
     }
 }
 
-// Un piccolo componente per non riscrivere lo stile ogni volta
+// Componente per i campi di testo normali
 @Composable
 fun KaktusTextField(value: String, onValueChange: (String) -> Unit, label: String) {
     OutlinedTextField(

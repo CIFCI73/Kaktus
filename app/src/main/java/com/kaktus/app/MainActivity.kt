@@ -42,7 +42,11 @@ fun KaktusApp() {
             // --- MOSTRA HOME ---
             HomeScreen(
                 viewModel = viewModel,
-                onAddEventClick = { isAddingEvent = true } // Va alla schermata Aggiungi
+                onAddEventClick = { isAddingEvent = true },
+                onLogoutClick = {
+                    auth.signOut()       // Disconnette Firebase
+                    isUserLoggedIn = false // Cambia schermata
+                }
             )
         }
 

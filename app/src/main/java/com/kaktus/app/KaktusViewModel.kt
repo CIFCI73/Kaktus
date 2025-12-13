@@ -29,9 +29,11 @@ class KaktusViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
 
-            // Ascoltiamo la collezione "events" in tempo reale
+            // Ascoltiamo la collezione "events" ordinata per voti (dal più alto al più basso)
             db.collection("events")
+                .orderBy("votes", com.google.firebase.firestore.Query.Direction.DESCENDING) // <--- AGGIUNGI QUESTA RIGA
                 .addSnapshotListener { snapshot, e ->
+                    // ... il resto rimane uguale
                     if (e != null) {
                         println("Errore nel caricamento eventi: ${e.message}")
                         _isLoading.value = false
@@ -84,6 +86,30 @@ class KaktusViewModel : ViewModel() {
                 _isLoading.value = false
                 // Qui potremmo gestire l'errore
                 println("Errore salvataggio: $e")
+            }
+    }
+
+    // Funzione per aggiungere un voto
+    fun onVoteClick(event: Event) {
+        // Aggiorniamo il documento su Firebase
+        // FieldValue.increment(1) è sicuro: se 100 persone cliccano insieme, li conta tutti
+        db.collection("events").document(event.id)
+            .update("votes", com.google.firebase.firestore.FieldValue.increment(1))
+            .addOnFailureListener { e ->
+                println("Errore voto: $e")
+            }
+    }
+
+
+    // Funzione per eliminare un evento
+    fun deleteEvent(event: Event) {
+        db.collection("events").document(event.id)
+            .delete()
+            .addOnSuccessListener {
+                println("Evento eliminato!")
+            }
+            .addOnFailureListener { e ->
+                println("Errore eliminazione: $e")
             }
     }
 
