@@ -45,22 +45,22 @@ fun HomeScreen(
     val events by viewModel.events.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    // --- STATO DEL FILTRO ---
-    val categories = listOf("Tutti", "Musica", "Sport", "Cibo", "Arte", "Notte", "Altro")
-    var selectedCategory by remember { mutableStateOf("Tutti") }
+    // --- ESTADO DEL FILTRO (Traducido) ---
+    val categories = listOf("Todos", "Música", "Deporte", "Comida", "Arte", "Noche", "Otro")
+    var selectedCategory by remember { mutableStateOf("Todos") }
 
-    // --- STATO DELLA RICERCA ---
-    var searchQuery by remember { mutableStateOf("") } // <--- NUOVO: Testo cercato
+    // --- ESTADO DE BÚSQUEDA ---
+    var searchQuery by remember { mutableStateOf("") }
 
-    // --- LOGICA DI FILTRO COMBINATA ---
-    // Un evento passa se: (Categoria corrisponde) E (Titolo o Luogo contengono il testo)
+    // --- LÓGICA DE FILTRADO COMBINADA ---
     val filteredEvents = events.filter { event ->
-        val matchCategory = (selectedCategory == "Tutti" || event.category == selectedCategory)
+        // Nota: Asegúrate de que las categorías guardadas en Firebase coincidan con las traducidas
+        // O implementa una lógica de mapeo si "Music" está guardado como "Musica" en la DB
+        val matchCategory = (selectedCategory == "Todos" || event.category == selectedCategory)
 
         val matchSearch = if (searchQuery.isEmpty()) {
-            true // Se non cerco nulla, vanno bene tutti
+            true
         } else {
-            // Cerchiamo nel Titolo O nel Luogo (ignorando maiuscole/minuscole)
             event.title.contains(searchQuery, ignoreCase = true) ||
                     event.location.contains(searchQuery, ignoreCase = true)
         }
@@ -71,15 +71,14 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Eventi Gran Canaria", fontWeight = FontWeight.Bold) },
+                title = { Text("Eventos Gran Canaria", fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = KaktusBeige,
                     titleContentColor = KaktusGreen
                 ),
                 actions = {
-                    // Cambiamo l'icona da ExitToApp a Person
-                    IconButton(onClick = onLogoutClick) { // Nota: il nome del parametro è rimasto onLogoutClick per non rompere tutto, ma ora apre il profilo
-                        Icon(Icons.Default.Person, contentDescription = "Profilo", tint = KaktusGreen)
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(Icons.Default.Person, contentDescription = "Perfil", tint = KaktusGreen)
                     }
                 }
             )
@@ -90,7 +89,7 @@ fun HomeScreen(
                 containerColor = KaktusGreen,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Aggiungi Evento")
+                Icon(Icons.Default.Add, contentDescription = "Añadir Evento")
             }
         },
         containerColor = KaktusBeige
@@ -98,17 +97,16 @@ fun HomeScreen(
 
         Column(modifier = Modifier.padding(paddingValues)) {
 
-            // --- 1. BARRA DI RICERCA ---
+            // --- 1. BARRA DE BÚSQUEDA ---
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Cerca titolo o luogo...") },
+                placeholder = { Text("Buscar título o lugar...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = KaktusGreen) },
                 trailingIcon = {
-                    // Tasto X per cancellare la ricerca velocemente
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cancella", tint = Color.Gray)
+                            Icon(Icons.Default.Close, contentDescription = "Borrar", tint = Color.Gray)
                         }
                     }
                 },
@@ -118,14 +116,14 @@ fun HomeScreen(
                     .background(KaktusLightBeige, RoundedCornerShape(8.dp)),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = KaktusGreen,
-                    unfocusedBorderColor = Color.Transparent, // Rimuove il bordo quando non cliccato per stile più pulito
+                    unfocusedBorderColor = Color.Transparent,
                     cursorColor = KaktusGreen
                 ),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true
             )
 
-            // --- 2. FILTRI CATEGORIA ---
+            // --- 2. FILTROS CATEGORÍA ---
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,16 +149,15 @@ fun HomeScreen(
                 }
             }
 
-            // --- 3. LISTA EVENTI FILTRATA ---
+            // --- 3. LISTA DE EVENTOS ---
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = KaktusGreen)
                 }
             } else {
                 if (filteredEvents.isEmpty()) {
-                    // Se non ci sono risultati
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Nessun evento trovato 🌵", color = Color.Gray)
+                        Text("No se encontraron eventos 🌵", color = Color.Gray)
                     }
                 } else {
                     LazyColumn(
@@ -173,7 +170,6 @@ fun HomeScreen(
                             EventCard(
                                 event = event,
                                 onVoteClick = { viewModel.onVoteClick(event) },
-                                //onDeleteClick = { viewModel.deleteEvent(event) },
                                 onClick = { onEventClick(event) }
                             )
                         }
@@ -183,11 +179,12 @@ fun HomeScreen(
         }
     }
 }
+
 @Composable
 fun EventCard(
     event: Event,
     onVoteClick: () -> Unit,
-    onDeleteClick: (() -> Unit)? = null, // <--- 1. ORA È OPZIONALE (può essere null)
+    onDeleteClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -201,11 +198,10 @@ fun EventCard(
     ) {
         Box {
             Column {
-                // ... (Tutta la parte dell'immagine e del testo rimane UGUALE) ...
                 if (event.imageUrl.isNotEmpty()) {
                     AsyncImage(
                         model = event.imageUrl,
-                        contentDescription = "Foto evento",
+                        contentDescription = "Foto del evento",
                         modifier = Modifier.fillMaxWidth().height(180.dp),
                         contentScale = ContentScale.Crop
                     )
@@ -214,7 +210,7 @@ fun EventCard(
                         modifier = Modifier.fillMaxWidth().height(150.dp).background(KaktusGreen.copy(alpha = 0.3f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Nessuna Immagine", color = KaktusGreen)
+                        Text("Sin Imagen", color = KaktusGreen)
                     }
                 }
 
@@ -246,7 +242,7 @@ fun EventCard(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen),
                             modifier = Modifier.weight(1f).padding(end = 4.dp)
-                        ) { Text("Mappa") }
+                        ) { Text("Mapa") }
 
                         Button(
                             onClick = {
@@ -257,12 +253,12 @@ fun EventCard(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                             modifier = Modifier.weight(1f).padding(start = 4.dp)
-                        ) { Text("Biglietti") }
+                        ) { Text("Entradas") }
                     }
                 }
             }
 
-            // Voto (Sempre visibile)
+            // Voto
             Surface(
                 color = KaktusLightBeige.copy(alpha = 0.9f),
                 shape = CircleShape,
@@ -271,17 +267,16 @@ fun EventCard(
                 Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "${event.votes}", fontWeight = FontWeight.Bold, color = KaktusGreen)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(imageVector = Icons.Default.Favorite, contentDescription = "Vota", tint = Color.Red, modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.Favorite, contentDescription = "Votar", tint = Color.Red, modifier = Modifier.size(20.dp))
                 }
             }
 
-            // --- 2. IL CESTINO ORA APPARE SOLO SE PASSATO ---
             if (onDeleteClick != null) {
                 IconButton(
                     onClick = onDeleteClick,
                     modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(Color.White.copy(alpha = 0.7f), CircleShape)
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.Red)
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
                 }
             }
         }

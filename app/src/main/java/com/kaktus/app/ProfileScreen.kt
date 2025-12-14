@@ -29,21 +29,21 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit,
     onEventClick: (Event) -> Unit
 ) {
-    // Carichiamo gli eventi dell'utente appena apriamo la pagina
+    // Cargamos eventos del usuario al abrir la página
     LaunchedEffect(Unit) {
         viewModel.fetchUserEvents()
     }
 
     val userEvents by viewModel.userEvents.collectAsState()
-    val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Utente"
+    val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Usuario"
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Il mio Profilo") },
+                title = { Text("Mi Perfil") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = KaktusBeige)
@@ -56,14 +56,13 @@ fun ProfileScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // --- INTESTAZIONE PROFILO ---
+            // --- CABECERA PERFIL ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Icona Profilo Grande
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -84,22 +83,22 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tasto Logout
+                // Botón Cerrar Sesión
                 Button(
                     onClick = onLogoutClick,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f))
                 ) {
                     Icon(Icons.Default.ExitToApp, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Esci")
+                    Text("Cerrar sesión")
                 }
             }
 
             Divider(color = KaktusGreen, thickness = 1.dp)
 
-            // --- LISTA "I MIEI EVENTI" ---
+            // --- LISTA "MIS EVENTOS" ---
             Text(
-                text = "Eventi creati da me (${userEvents.size})",
+                text = "Eventos creados por mí (${userEvents.size})",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
                 color = KaktusGreen,
@@ -108,7 +107,7 @@ fun ProfileScreen(
 
             if (userEvents.isEmpty()) {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Text("Non hai ancora creato eventi.", color = Color.Gray)
+                    Text("Aún no has creado eventos.", color = Color.Gray)
                 }
             } else {
                 LazyColumn(

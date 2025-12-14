@@ -21,21 +21,21 @@ import com.kaktus.app.ui.theme.KaktusLightBeige
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
-    // Variabili di stato (memoria della schermata)
+    // Variables de estado
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isRegistering by remember { mutableStateOf(false) } // Se true, siamo in modalità "Registrazione"
+    var isRegistering by remember { mutableStateOf(false) } // Si es true, estamos en modo "Registro"
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
 
-    // Layout principale: Colonna centrata
+    // Layout principal
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(KaktusBeige), // Il nostro sfondo sabbia
+            .background(KaktusBeige),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -45,7 +45,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Titolo
+            // Título
             Text(
                 text = "Kaktus",
                 fontSize = 48.sp,
@@ -59,7 +59,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text("Email") },
+                label = { Text("Correo electrónico") },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = KaktusGreen,
@@ -71,13 +71,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Password
+            // Campo Contraseña
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password") },
+                label = { Text("Contraseña") },
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation(), // Nasconde la password con i pallini
+                visualTransformation = PasswordVisualTransformation(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = KaktusGreen,
                     focusedLabelColor = KaktusGreen,
@@ -86,7 +86,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().background(KaktusLightBeige)
             )
 
-            // Messaggio di errore (se presente)
+            // Mensaje de error
             if (errorMessage != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = errorMessage!!, color = Color.Red, fontSize = 14.sp)
@@ -94,7 +94,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Bottone Login / Registrati
+            // Botón Login / Registro
             Button(
                 onClick = {
                     isLoading = true
@@ -102,14 +102,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
 
                     if (email.isNotEmpty() && password.isNotEmpty()) {
                         if (isRegistering) {
-                            // LOGICA REGISTRAZIONE
+                            // LOGICA REGISTRO
                             auth.createUserWithEmailAndPassword(email, password)
                                 .addOnCompleteListener { task ->
                                     isLoading = false
                                     if (task.isSuccessful) {
-                                        onLoginSuccess() // Vai alla Home
+                                        onLoginSuccess()
                                     } else {
-                                        errorMessage = task.exception?.localizedMessage ?: "Errore sconosciuto"
+                                        errorMessage = task.exception?.localizedMessage ?: "Error desconocido"
                                     }
                                 }
                         } else {
@@ -118,15 +118,15 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                                 .addOnCompleteListener { task ->
                                     isLoading = false
                                     if (task.isSuccessful) {
-                                        onLoginSuccess() // Vai alla Home
+                                        onLoginSuccess()
                                     } else {
-                                        errorMessage = "Login fallito. Controlla email e password."
+                                        errorMessage = "Inicio de sesión fallido. Verifica correo y contraseña."
                                     }
                                 }
                         }
                     } else {
                         isLoading = false
-                        errorMessage = "Riempi tutti i campi!"
+                        errorMessage = "¡Rellena todos los campos!"
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen),
@@ -137,16 +137,16 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text(text = if (isRegistering) "Registrati" else "Accedi", fontSize = 18.sp)
+                    Text(text = if (isRegistering) "Registrarse" else "Acceder", fontSize = 18.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Testo per cambiare modalità
+            // Texto para cambiar modo
             TextButton(onClick = { isRegistering = !isRegistering }) {
                 Text(
-                    text = if (isRegistering) "Hai già un account? Accedi" else "Non hai un account? Registrati",
+                    text = if (isRegistering) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate",
                     color = KaktusGreen
                 )
             }

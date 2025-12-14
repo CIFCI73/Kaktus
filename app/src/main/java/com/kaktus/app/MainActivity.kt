@@ -18,14 +18,16 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}@Composable
+}
+
+@Composable
 fun KaktusApp() {
     val auth = FirebaseAuth.getInstance()
     var isUserLoggedIn by remember { mutableStateOf(auth.currentUser != null) }
 
-    // STATI NAVIGAZIONE
+    // ESTADOS DE NAVEGACIÓN
     var isAddingEvent by remember { mutableStateOf(false) }
-    var isProfileOpen by remember { mutableStateOf(false) } // <--- NUOVO STATO
+    var isProfileOpen by remember { mutableStateOf(false) } // <--- NUEVO ESTADO
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
 
     if (isUserLoggedIn) {
@@ -37,7 +39,7 @@ fun KaktusApp() {
                 onBackClick = { isAddingEvent = false }
             )
         } else if (isProfileOpen) {
-            // --- MOSTRA PROFILO ---
+            // --- MOSTRAR PERFIL ---
             ProfileScreen(
                 viewModel = viewModel,
                 onBackClick = { isProfileOpen = false },
@@ -47,7 +49,7 @@ fun KaktusApp() {
                     isProfileOpen = false
                 },
                 onEventClick = { event ->
-                    selectedEvent = event // Apre i dettagli anche dal profilo
+                    selectedEvent = event // Abre los detalles también desde el perfil
                 }
             )
         } else if (selectedEvent != null) {
@@ -57,11 +59,11 @@ fun KaktusApp() {
                 onVoteClick = { viewModel.onVoteClick(selectedEvent!!) }
             )
         } else {
-            // --- MOSTRA HOME ---
+            // --- MOSTRAR INICIO ---
             HomeScreen(
                 viewModel = viewModel,
                 onAddEventClick = { isAddingEvent = true },
-                onLogoutClick = { isProfileOpen = true }, // <--- ORA APRE IL PROFILO
+                onLogoutClick = { isProfileOpen = true }, // <--- AHORA ABRE EL PERFIL
                 onEventClick = { event -> selectedEvent = event }
             )
         }

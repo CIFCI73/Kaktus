@@ -10,10 +10,10 @@ import kotlinx.coroutines.launch
 
 class KaktusViewModel : ViewModel() {
 
-    // Il database
+    // La base de datos
     private val db = FirebaseFirestore.getInstance()
 
-    // La lista degli eventi (inizialmente vuota) che la UI osserverà
+    // La lista de eventos (inicialmente vacía) que la UI observará
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = _events
     private val _userEvents = MutableStateFlow<List<Event>>(emptyList())
@@ -23,7 +23,7 @@ class KaktusViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        // Appena l'app parte, inizia ad ascoltare il database
+        // Apenas inicia la app, comienza a escuchar la base de datos
         fetchEvents()
     }
 
@@ -33,7 +33,7 @@ class KaktusViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             db.collection("events")
-                .whereEqualTo("userId", currentUserId) // <--- FILTRO MAGICO
+                .whereEqualTo("userId", currentUserId) // <--- FILTRO MÁGICO
                 .addSnapshotListener { snapshot, e ->
                     if (snapshot != null) {
                         val myEvents = snapshot.documents.mapNotNull { doc ->
@@ -50,19 +50,19 @@ class KaktusViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
 
-            // Ascoltiamo la collezione "events" ordinata per voti (dal più alto al più basso)
+            // Escuchamos la colección "events" ordenada por votos (del más alto al más bajo)
             db.collection("events")
-                .orderBy("votes", com.google.firebase.firestore.Query.Direction.DESCENDING) // <--- AGGIUNGI QUESTA RIGA
+                .orderBy("votes", com.google.firebase.firestore.Query.Direction.DESCENDING) // <--- AÑADIR ESTA LÍNEA
                 .addSnapshotListener { snapshot, e ->
-                    // ... il resto rimane uguale
+                    // ... el resto permanece igual
                     if (e != null) {
-                        println("Errore nel caricamento eventi: ${e.message}")
+                        println("Error al cargar eventos: ${e.message}")
                         _isLoading.value = false
                         return@addSnapshotListener
                     }
 
                     if (snapshot != null) {
-                        // Trasformiamo i documenti Firebase in oggetti Event
+                        // Transformamos los documentos de Firebase en objetos Event
                         val eventsList = snapshot.documents.mapNotNull { doc ->
                             doc.toObject(Event::class.java)?.copy(id = doc.id)
                         }
@@ -86,7 +86,7 @@ class KaktusViewModel : ViewModel() {
     ) {
         _isLoading.value = true
 
-        // Recuperiamo l'ID dell'utente loggato
+        // Recuperamos el ID del usuario logueado
         val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
         val newEvent = hashMapOf(
@@ -99,7 +99,7 @@ class KaktusViewModel : ViewModel() {
             "mapsLink" to mapsLink,
             "ticketLink" to ticketLink,
             "votes" to 0,
-            "userId" to currentUserId // <--- SALVIAMO L'ID
+            "userId" to currentUserId // <--- GUARDAMOS EL ID
         )
 
         db.collection("events").add(newEvent)
@@ -112,34 +112,34 @@ class KaktusViewModel : ViewModel() {
             }
     }
 
-    // Funzione per aggiungere un voto
+    // Función para añadir un voto
     fun onVoteClick(event: Event) {
-        // Aggiorniamo il documento su Firebase
-        // FieldValue.increment(1) è sicuro: se 100 persone cliccano insieme, li conta tutti
+        // Actualizamos el documento en Firebase
+        // FieldValue.increment(1) es seguro: si 100 personas hacen clic a la vez, los cuenta todos
         db.collection("events").document(event.id)
             .update("votes", com.google.firebase.firestore.FieldValue.increment(1))
             .addOnFailureListener { e ->
-                println("Errore voto: $e")
+                println("Error voto: $e")
             }
     }
 
 
-    // Funzione per eliminare un evento
+    // Función para eliminar un evento
     fun deleteEvent(event: Event) {
         db.collection("events").document(event.id)
             .delete()
             .addOnSuccessListener {
-                println("Evento eliminato!")
+                println("¡Evento eliminado!")
             }
             .addOnFailureListener { e ->
-                println("Errore eliminazione: $e")
+                println("Error eliminación: $e")
             }
     }
 
-    // Funzione per aggiungere un voto (la useremo dopo)
+    // Función para añadir un voto (la usaremos después)
     fun voteEvent(eventId: String) {
-        // Incrementa il voto di 1
-        // Nota: questa è una operazione "atomica" su Firebase
-        // Per ora lasciamola vuota, la riempiremo quando facciamo la UI dei voti
+        // Incrementa el voto en 1
+        // Nota: esta es una operación "atómica" en Firebase
+        // Por ahora la dejamos vacía, la llenaremos cuando hagamos la UI de votos
     }
 }

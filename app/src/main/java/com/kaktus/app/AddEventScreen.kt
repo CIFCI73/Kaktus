@@ -37,7 +37,7 @@ fun AddEventScreen(
     var mapsLink by remember { mutableStateOf("") }
     var ticketLink by remember { mutableStateOf("") }
 
-    val categories = listOf("Musica", "Sport", "Cibo", "Arte", "Notte", "Altro")
+    val categories = listOf("Música", "Deporte", "Comida", "Arte", "Noche", "Otro")
     var selectedCategory by remember { mutableStateOf(categories[0]) }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -49,9 +49,9 @@ fun AddEventScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nuovo Evento") },
+                title = { Text("Nuevo Evento") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) { Icon(Icons.Default.ArrowBack, "Indietro") }
+                    IconButton(onClick = onBackClick) { Icon(Icons.Default.ArrowBack, "Atrás") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = KaktusBeige)
             )
@@ -66,16 +66,15 @@ fun AddEventScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Dettagli Evento", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = KaktusGreen)
+            Text("Detalles del Evento", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = KaktusGreen)
 
-            // Qui usiamo la funzione KaktusTextField che ora è definita in fondo al file!
-            KaktusTextField(value = title, onValueChange = { title = it }, label = "Titolo")
+            KaktusTextField(value = title, onValueChange = { title = it }, label = "Título")
 
-            // CAMPO DESCRIZIONE
+            // CAMPO DESCRIPCIÓN
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Descrizione") },
+                label = { Text("Descripción") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -87,7 +86,7 @@ fun AddEventScreen(
             OutlinedTextField(
                 value = date,
                 onValueChange = { },
-                label = { Text("Data") },
+                label = { Text("Fecha") },
                 readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = true }) {
@@ -98,9 +97,9 @@ fun AddEventScreen(
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = KaktusGreen, focusedLabelColor = KaktusGreen)
             )
 
-            KaktusTextField(value = location, onValueChange = { location = it }, label = "Luogo")
+            KaktusTextField(value = location, onValueChange = { location = it }, label = "Lugar")
 
-            Text("Categoria", fontWeight = FontWeight.Bold, color = KaktusGreen)
+            Text("Categoría", fontWeight = FontWeight.Bold, color = KaktusGreen)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(categories) { category ->
                     FilterChip(
@@ -114,9 +113,9 @@ fun AddEventScreen(
 
             Divider(color = KaktusGreen, thickness = 1.dp)
 
-            KaktusTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Link Immagine (URL)")
-            KaktusTextField(value = mapsLink, onValueChange = { mapsLink = it }, label = "Link Google Maps")
-            KaktusTextField(value = ticketLink, onValueChange = { ticketLink = it }, label = "Link Biglietti")
+            KaktusTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Enlace de Imagen (URL)")
+            KaktusTextField(value = mapsLink, onValueChange = { mapsLink = it }, label = "Enlace Google Maps")
+            KaktusTextField(value = ticketLink, onValueChange = { ticketLink = it }, label = "Enlace Entradas")
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -134,7 +133,7 @@ fun AddEventScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(color = Color.White) else Text("Pubblica", fontSize = 18.sp)
+                if (isLoading) CircularProgressIndicator(color = Color.White) else Text("Publicar", fontSize = 18.sp)
             }
         }
 
@@ -145,14 +144,13 @@ fun AddEventScreen(
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { date = dateFormatter.format(Date(it)) }
                         showDatePicker = false
-                    }) { Text("OK", color = KaktusGreen) }
+                    }) { Text("Aceptar", color = KaktusGreen) }
                 }
             ) { DatePicker(state = datePickerState) }
         }
     }
 }
 
-// Questa funzione serve a creare i campi di testo senza riscrivere tutto il codice ogni volta
 @Composable
 fun KaktusTextField(value: String, onValueChange: (String) -> Unit, label: String) {
     OutlinedTextField(

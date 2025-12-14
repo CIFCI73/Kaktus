@@ -35,13 +35,12 @@ fun EventDetailScreen(
     val context = LocalContext.current
 
     Scaffold(
-        // Facciamo una TopBar trasparente o minimale
         topBar = {
             TopAppBar(
-                title = { }, // Titolo vuoto per pulizia
+                title = { },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro", tint = KaktusGreen)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = KaktusGreen)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -55,22 +54,22 @@ fun EventDetailScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // 1. IMMAGINONA GRANDE IN ALTO
+            // 1. IMAGEN GRANDE
             if (event.imageUrl.isNotEmpty()) {
                 AsyncImage(
                     model = event.imageUrl,
                     contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().height(300.dp), // Molto alta
+                    modifier = Modifier.fillMaxWidth().height(300.dp),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(modifier = Modifier.fillMaxWidth().height(250.dp).background(KaktusGreen.copy(alpha = 0.3f)))
             }
 
-            // 2. CONTENUTO
+            // 2. CONTENIDO
             Column(modifier = Modifier.padding(24.dp)) {
 
-                // Categoria e Voti
+                // Categoría y Votos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -82,7 +81,7 @@ fun EventDetailScreen(
                         colors = AssistChipDefaults.assistChipColors(labelColor = KaktusGreen)
                     )
 
-                    // Bottone Voto Grande
+                    // Botón Voto
                     Button(
                         onClick = onVoteClick,
                         colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen),
@@ -96,12 +95,12 @@ fun EventDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Titolo
+                // Título
                 Text(event.title, fontSize = 32.sp, fontWeight = FontWeight.Bold, color = KaktusGreen, lineHeight = 36.sp)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Data e Luogo
+                // Fecha y Lugar
                 Text(event.date, fontSize = 18.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -116,11 +115,11 @@ fun EventDetailScreen(
                 Divider(color = KaktusGreen.copy(alpha = 0.3f))
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // DESCRIZIONE COMPLETA
-                Text("Descrizione", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = KaktusGreen)
+                // DESCRIPCIÓN COMPLETA
+                Text("Descripción", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = KaktusGreen)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = if (event.description.isNotEmpty()) event.description else "Nessuna descrizione disponibile.",
+                    text = if (event.description.isNotEmpty()) event.description else "No hay descripción disponible.",
                     fontSize = 16.sp,
                     lineHeight = 24.sp,
                     color = Color.DarkGray
@@ -128,7 +127,7 @@ fun EventDetailScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // BOTTONI MAPPA E BIGLIETTI (Grandi)
+                // BOTONES MAPA Y ENTRADAS
                 Button(
                     onClick = {
                         if (event.mapsLink.isNotEmpty()) {
@@ -138,7 +137,7 @@ fun EventDetailScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(55.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen)
-                ) { Text("Vedi su Mappa", fontSize = 18.sp) }
+                ) { Text("Ver en Mapa", fontSize = 18.sp) }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -150,7 +149,7 @@ fun EventDetailScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(55.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                    ) { Text("Compra Biglietti", fontSize = 18.sp) }
+                    ) { Text("Comprar Entradas", fontSize = 18.sp) }
                 }
             }
         }
