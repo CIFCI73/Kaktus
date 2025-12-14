@@ -18,42 +18,55 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-@Composable
+}@Composable
 fun KaktusApp() {
     val auth = FirebaseAuth.getInstance()
-    // Stato Login
     var isUserLoggedIn by remember { mutableStateOf(auth.currentUser != null) }
-    // Stato Navigazione: stiamo aggiungendo un evento?
+
+    // STATI NAVIGAZIONE
     var isAddingEvent by remember { mutableStateOf(false) }
+    var isProfileOpen by remember { mutableStateOf(false) } // <--- NUOVO STATO
+    var selectedEvent by remember { mutableStateOf<Event?>(null) }
 
     if (isUserLoggedIn) {
-
-        // Inizializziamo il ViewModel
         val viewModel: KaktusViewModel = viewModel()
 
         if (isAddingEvent) {
-            // --- MOSTRA SCHERMATA AGGIUNGI ---
             AddEventScreen(
                 viewModel = viewModel,
-                onBackClick = { isAddingEvent = false } // Torna alla Home
+                onBackClick = { isAddingEvent = false }
+            )
+        } else if (isProfileOpen) {
+            // --- MOSTRA PROFILO ---
+            ProfileScreen(
+                viewModel = viewModel,
+                onBackClick = { isProfileOpen = false },
+                onLogoutClick = {
+                    auth.signOut()
+                    isUserLoggedIn = false
+                    isProfileOpen = false
+                },
+                onEventClick = { event ->
+                    selectedEvent = event // Apre i dettagli anche dal profilo
+                }
+            )
+        } else if (selectedEvent != null) {
+            EventDetailScreen(
+                event = selectedEvent!!,
+                onBackClick = { selectedEvent = null },
+                onVoteClick = { viewModel.onVoteClick(selectedEvent!!) }
             )
         } else {
             // --- MOSTRA HOME ---
             HomeScreen(
                 viewModel = viewModel,
                 onAddEventClick = { isAddingEvent = true },
-                onLogoutClick = {
-                    auth.signOut()       // Disconnette Firebase
-                    isUserLoggedIn = false // Cambia schermata
-                }
+                onLogoutClick = { isProfileOpen = true }, // <--- ORA APRE IL PROFILO
+                onEventClick = { event -> selectedEvent = event }
             )
         }
 
     } else {
-        // --- MOSTRA LOGIN ---
-        LoginScreen(
-            onLoginSuccess = { isUserLoggedIn = true }
-        )
+        LoginScreen(onLoginSuccess = { isUserLoggedIn = true })
     }
 }

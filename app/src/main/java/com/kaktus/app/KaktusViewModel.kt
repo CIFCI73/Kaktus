@@ -16,6 +16,8 @@ class KaktusViewModel : ViewModel() {
     // La lista degli eventi (inizialmente vuota) che la UI osserverà
     private val _events = MutableStateFlow<List<Event>>(emptyList())
     val events: StateFlow<List<Event>> = _events
+    private val _userEvents = MutableStateFlow<List<Event>>(emptyList())
+    val userEvents: StateFlow<List<Event>> = _userEvents
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -23,6 +25,25 @@ class KaktusViewModel : ViewModel() {
     init {
         // Appena l'app parte, inizia ad ascoltare il database
         fetchEvents()
+    }
+
+    fun fetchUserEvents() {
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            db.collection("events")
+                .whereEqualTo("userId", currentUserId) // <--- FILTRO MAGICO
+                .addSnapshotListener { snapshot, e ->
+                    if (snapshot != null) {
+                        val myEvents = snapshot.documents.mapNotNull { doc ->
+                            doc.toObject(Event::class.java)?.copy(id = doc.id)
+                        }
+                        _userEvents.value = myEvents
+                        _isLoading.value = false
+                    }
+                }
+        }
     }
 
     private fun fetchEvents() {
@@ -52,40 +73,42 @@ class KaktusViewModel : ViewModel() {
         }
     }
 
-    // Funzione per salvare un nuovo evento su Firebase
     fun saveEvent(
         title: String,
         date: String,
         location: String,
+        description: String,
+        category: String,
         imageUrl: String,
         mapsLink: String,
         ticketLink: String,
-        onSuccess: () -> Unit // Cosa fare quando ha finito (tornare indietro)
+        onSuccess: () -> Unit
     ) {
         _isLoading.value = true
 
-        // Creiamo l'oggetto Evento
+        // Recuperiamo l'ID dell'utente loggato
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
         val newEvent = hashMapOf(
             "title" to title,
             "date" to date,
             "location" to location,
+            "description" to description,
+            "category" to category,
             "imageUrl" to imageUrl,
             "mapsLink" to mapsLink,
             "ticketLink" to ticketLink,
-            "votes" to 0
+            "votes" to 0,
+            "userId" to currentUserId // <--- SALVIAMO L'ID
         )
 
-        // Spediamo a Firebase
-        db.collection("events")
-            .add(newEvent)
+        db.collection("events").add(newEvent)
             .addOnSuccessListener {
                 _isLoading.value = false
-                onSuccess() // Avvisa la schermata che abbiamo finito
+                onSuccess()
             }
-            .addOnFailureListener { e ->
+            .addOnFailureListener {
                 _isLoading.value = false
-                // Qui potremmo gestire l'errore
-                println("Errore salvataggio: $e")
             }
     }
 

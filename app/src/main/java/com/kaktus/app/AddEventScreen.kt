@@ -2,6 +2,8 @@ package com.kaktus.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,31 +29,29 @@ fun AddEventScreen(
     viewModel: KaktusViewModel,
     onBackClick: () -> Unit
 ) {
-    // Variabili per i campi di testo
     var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
     var mapsLink by remember { mutableStateOf("") }
     var ticketLink by remember { mutableStateOf("") }
 
-    // Variabili per il CALENDARIO
+    val categories = listOf("Musica", "Sport", "Cibo", "Arte", "Notte", "Altro")
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
+
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     val isLoading by viewModel.isLoading.collectAsState()
-
-    // Logica per formattare la data (da millisecondi a testo "gg/mm/aaaa")
-    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Nuovo Evento") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
-                    }
+                    IconButton(onClick = onBackClick) { Icon(Icons.Default.ArrowBack, "Indietro") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = KaktusBeige)
             )
@@ -66,36 +66,53 @@ fun AddEventScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Text("Dettagli Evento", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = KaktusGreen)
 
-            // Titolo
-            KaktusTextField(value = title, onValueChange = { title = it }, label = "Titolo (es. Jazz Festival)")
+            // Qui usiamo la funzione KaktusTextField che ora è definita in fondo al file!
+            KaktusTextField(value = title, onValueChange = { title = it }, label = "Titolo")
 
-            // --- CAMPO DATA CON CALENDARIO ---
+            // CAMPO DESCRIZIONE
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descrizione") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(KaktusLightBeige),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = KaktusGreen, focusedLabelColor = KaktusGreen),
+                maxLines = 5
+            )
+
             OutlinedTextField(
                 value = date,
-                onValueChange = { }, // Non facciamo nulla se l'utente prova a scrivere
+                onValueChange = { },
                 label = { Text("Data") },
-                readOnly = true, // L'utente non può digitare a mano
+                readOnly = true,
                 trailingIcon = {
                     IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Scegli Data", tint = KaktusGreen)
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = KaktusGreen)
                     }
                 },
                 modifier = Modifier.fillMaxWidth().background(KaktusLightBeige),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = KaktusGreen,
-                    focusedLabelColor = KaktusGreen,
-                    cursorColor = KaktusGreen
-                )
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = KaktusGreen, focusedLabelColor = KaktusGreen)
             )
 
-            // Luogo
-            KaktusTextField(value = location, onValueChange = { location = it }, label = "Luogo (es. Maspalomas)")
+            KaktusTextField(value = location, onValueChange = { location = it }, label = "Luogo")
+
+            Text("Categoria", fontWeight = FontWeight.Bold, color = KaktusGreen)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(categories) { category ->
+                    FilterChip(
+                        selected = (category == selectedCategory),
+                        onClick = { selectedCategory = category },
+                        label = { Text(category) },
+                        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = KaktusGreen, selectedLabelColor = Color.White)
+                    )
+                }
+            }
 
             Divider(color = KaktusGreen, thickness = 1.dp)
-            Text("Link Utili", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = KaktusGreen)
 
             KaktusTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Link Immagine (URL)")
             KaktusTextField(value = mapsLink, onValueChange = { mapsLink = it }, label = "Link Google Maps")
@@ -103,12 +120,12 @@ fun AddEventScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTTONE SALVA
             Button(
                 onClick = {
                     if (title.isNotEmpty() && date.isNotEmpty()) {
                         viewModel.saveEvent(
-                            title, date, location, imageUrl, mapsLink, ticketLink,
+                            title, date, location, description, selectedCategory,
+                            imageUrl, mapsLink, ticketLink,
                             onSuccess = { onBackClick() }
                         )
                     }
@@ -117,39 +134,25 @@ fun AddEventScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = KaktusGreen),
                 enabled = !isLoading
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                } else {
-                    Text("Pubblica Evento", fontSize = 18.sp)
-                }
+                if (isLoading) CircularProgressIndicator(color = Color.White) else Text("Pubblica", fontSize = 18.sp)
             }
         }
 
-        // --- IL COMPONENTE DIALOGO CALENDARIO ---
         if (showDatePicker) {
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                date = dateFormatter.format(Date(millis))
-                            }
-                            showDatePicker = false
-                        }
-                    ) { Text("OK", color = KaktusGreen) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) { Text("Annulla", color = KaktusGreen) }
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { date = dateFormatter.format(Date(it)) }
+                        showDatePicker = false
+                    }) { Text("OK", color = KaktusGreen) }
                 }
-            ) {
-                DatePicker(state = datePickerState)
-            }
+            ) { DatePicker(state = datePickerState) }
         }
     }
 }
 
-// Componente per i campi di testo normali
+// Questa funzione serve a creare i campi di testo senza riscrivere tutto il codice ogni volta
 @Composable
 fun KaktusTextField(value: String, onValueChange: (String) -> Unit, label: String) {
     OutlinedTextField(
@@ -157,10 +160,6 @@ fun KaktusTextField(value: String, onValueChange: (String) -> Unit, label: Strin
         onValueChange = onValueChange,
         label = { Text(label) },
         modifier = Modifier.fillMaxWidth().background(KaktusLightBeige),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = KaktusGreen,
-            focusedLabelColor = KaktusGreen,
-            cursorColor = KaktusGreen
-        )
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = KaktusGreen, focusedLabelColor = KaktusGreen)
     )
 }

@@ -1,14 +1,15 @@
 package com.kaktus.app
 
-// Questa classe rappresenta un singolo evento
 data class Event(
-    val id: String = "",             // ID univoco di Firebase
-    val title: String = "",          // Es. "Jazz Festival"
-    val date: String = "",           // Es. "12/08/2025"
-    val location: String = "",       // Es. "Maspalomas"
-    val description: String = "",    // Info aggiuntive
-    val imageUrl: String = "",       // Link all'immagine (se c'è)
-    val mapsLink: String = "",       // Link Google Maps
-    val ticketLink: String = "",     // Link biglietti
-    val votes: Int = 0               // Numero di voti
+    val id: String = "",
+    val title: String = "",
+    val date: String = "",
+    val location: String = "",
+    val description: String = "",
+    val category: String = "Altro", // <--- NUOVO CAMPO
+    val imageUrl: String = "",
+    val mapsLink: String = "",
+    val ticketLink: String = "",
+    val votes: Int = 0,
+    val userId: String = ""
 )
