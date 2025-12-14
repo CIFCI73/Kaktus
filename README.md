@@ -33,7 +33,7 @@ El intermediario crucial es el ViewModel, concretamente nuestra clase KaktusView
 
 
 ### 4. Diseño de la Base de Datos (Cloud Firestore)
-Para la persistencia de los datos, hemos optado por Cloud Firestore, la base de datos NoSQL de nueva generación de Google. Esta elección se fundamenta en la flexibilidad que ofrecen los esquemas libres de documentos frente a las tablas rígidas de SQL, lo cual es ideal para una aplicación en constante evolución como Kaktus. Además, la capacidad nativa de Firestore para sincronizar datos en tiempo real fue determinante: queríamos que si un usuario votaba por un evento, el contador se actualizase instantáneamente en las pantallas de todos los demás usuarios sin necesidad de recargar la página.
+Para la persistencia de los datos, hemos optado por Cloud Firestore, la base de datos NoSQL.La capacidad nativa de Firestore para sincronizar datos en tiempo real fue determinante: queríamos que si un usuario votaba por un evento, el contador se actualizase instantáneamente en las pantallas de todos los demás usuarios sin necesidad de recargar la página.
 
 La estructura de la base de datos es sencilla pero eficiente. Trabajamos principalmente con una colección raíz denominada events. Dentro de esta colección, cada documento representa un evento único y contiene toda la información necesaria para su visualización y gestión.
 
@@ -42,8 +42,7 @@ A nivel de esquema, cada documento de evento almacena campos de texto estándar 
 Por último, el campo votes es un entero numérico que actúa como contador de popularidad. La aplicación escucha activamente los cambios en este campo para reordenar la lista de eventos en la pantalla principal, mostrando siempre los más populares en la parte superior.
 
 ### 5. Lógica de Navegación y Flujo de la Aplicación
-En lugar de utilizar el sistema tradicional de navegación basado en Fragmentos o múltiples Actividades, hemos implementado una navegación moderna basada en estados dentro de una única actividad (MainActivity). Este enfoque, conocido como "Single Activity Architecture", simplifica enormemente el ciclo de vida de la aplicación.
-
+Hemos implementado una navegación basada en estados dentro de una única actividad (MainActivity). Este enfoque, conocido como "Single Activity Architecture".
 La MainActivity actúa como un orquestador. Define variables de estado observables (usando remember y mutableStateOf) que determinan qué pantalla debe mostrarse en cada momento. Por ejemplo, la variable isUserLoggedIn determina si el usuario debe ver la pantalla de Login o la Home. Del mismo modo, variables como selectedEvent o isAddingEvent actúan como interruptores: si selectedEvent contiene un evento, la aplicación "dibuja" la pantalla de detalles sobre la actual; si es nulo, vuelve a mostrar la lista general. Este sistema condicional hace que la navegación sea fluida y muy rápida, ya que no estamos destruyendo y creando actividades pesadas continuamente.
 
 ### 6. Análisis Detallado de las Funcionalidades
@@ -68,6 +67,58 @@ Al pulsar el botón de guardar, el ViewModel recopila todos los datos, adjunta a
 Cuando un usuario selecciona un evento, se abre la EventDetailScreen. A diferencia de las tarjetas resumen de la pantalla principal, esta vista está diseñada para ser inmersiva. Muestra la imagen de cabecera a gran tamaño y despliega la descripción completa del evento.
 
 Desde el punto de vista de la interactividad, esta pantalla conecta la aplicación con el mundo exterior mediante el uso de "Intents" de Android. Al hacer clic en los botones de "Mapa" o "Entradas", la aplicación lanza una intención para abrir la aplicación de Google Maps o el navegador web respectivamente, dirigiendo al usuario a la ubicación exacta o a la venta de tickets.
+
+### 7. Gestión de Usuario y Perfil Personal
+Uno de los requisitos más importantes para convertir Kaktus en una aplicación social era la gestión de la identidad. La pantalla ProfileScreen no es solo un panel de información, sino el centro de control del usuario.
+
+Técnicamente, esta pantalla implementa una lógica de consulta diferente a la principal. Al cargar el perfil, el ViewModel ejecuta una query específica a Firestore solicitando únicamente aquellos documentos donde el campo userId coincida con el identificador del usuario conectado. Esto garantiza la privacidad y el orden, mostrando al usuario exclusivamente su historial de contribuciones.
+
+Aquí reside también una decisión de diseño crucial para la seguridad de los datos: la funcionalidad de borrado. Hemos restringido la capacidad de eliminar eventos exclusivamente a esta pantalla. Mientras que en la pantalla principal las tarjetas de eventos son de "solo lectura" (permitiendo solo votar), en el perfil las tarjetas se renderizan inyectando una función adicional de "borrado". Al pulsar el icono de la papelera, la aplicación localiza el documento por su ID único y lo elimina permanentemente de la colección. Esta restricción previene que usuarios malintencionados puedan borrar contenido comunitario que no les pertenece.
+
+Adicionalmente, esta sección incluye la gestión de sesión, permitiendo al usuario cerrar su cuenta (Logout) mediante Firebase Auth, lo que limpia los estados locales de navegación y devuelve la aplicación a la pantalla de inicio de sesión.
+
+
+### 8. Diseño UX/UI e Identidad Visual
+La paleta cromática se basa en dos pilares: el Kaktus Green (un verde desaturado) que utilizamos para elementos de acción, botones y textos importantes, evocando la vegetación resistente de la isla; y el Kaktus Beige, un tono arena cálido utilizado como color de fondo (Scaffold containerColor). Esta combinación reduce la fatiga visual y ofrece una experiencia más orgánica y acogedora que el blanco puro.
+
+### 9. Conclusiones y Retos Superados
+Uno de los problemas técnicos más complejos que enfrentamos fue la gestión del ciclo de vida y la sincronización de datos asíncronos. Al principio, la aplicación intentaba mostrar datos antes de que llegaran de Internet, provocando errores o pantallas vacías. Solucionamos esto implementando estados de carga (isLoading) y utilizando Corutinas para suspender la ejecución de manera segura hasta recibir respuesta del servidor.
+En conclusión, hemos logrado crear una aplicación robusta, funcional y estéticamente agradable que cumple con todos los objetivos propuestos. Kaktus demuestra el potencial de las arquitecturas modernas en Android, permitiendo crear productos complejos con una base de código limpia y mantenible.
+
+### 10. Instrucciones de Instalación y Despliegue
+Dado que la aplicación depende de servicios en la nube (Firebase), para compilar y ejecutar el proyecto en un nuevo entorno es necesario seguir estos pasos estrictos:
+
+Requisitos Previos
+Android Studio Ladybug o superior.
+
+JDK 17 o superior.
+
+Conexión a Internet (para descargar dependencias Gradle y conectar con Firebase).
+
+Pasos para la Compilación
+Clonar el Repositorio: Descargar el código fuente desde el enlace de GitHub proporcionado en la entrega.
+
+Configuración de Firebase (Crítico):
+
+El proyecto requiere el archivo google-services.json para conectar con la base de datos.
+
+Este archivo debe colocarse dentro de la carpeta app/.
+
+Sincronización: Abrir el proyecto en Android Studio y permitir que Gradle descargue todas las librerías necesarias (Compose, Coil, Firebase BOM).
+
+Generación del APK:
+
+Ir al menú: Build > Build Bundle(s) / APK(s) > Build APK(s).
+
+Una vez finalizado, el archivo app-debug.apk se encontrará en app/build/outputs/apk/debug/.
+
+
+
+
+
+
+
+
 
 
 
