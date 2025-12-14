@@ -19,5 +19,18 @@ Para la infraestructura de backend ("Backend as a Service"), confiamos plenament
 Finalmente, para optimizar el rendimiento de la aplicación, hemos implementado programación asíncrona mediante Coroutines y Flow, lo que evita que la aplicación se congele durante las cargas de datos. La gestión de imágenes remotas se realiza a través de la librería Coil, que descarga y cachea las fotografías de los eventos de manera eficiente.
 
 
+### 3. Arquitectura de la Aplicación
+Hemos estructurado todo el proyecto siguiendo el patrón de arquitectura MVVM (Model - View - ViewModel). Esta decisión nos permite desacoplar la lógica de la interfaz, facilitando el mantenimiento y la escalabilidad del proyecto.
+
+Estructura y Flujo de Datos
+El proyecto se organiza en paquetes lógicos dentro de com.kaktus.app para mantener el orden. El flujo de la información dentro de la aplicación sigue un ciclo unidireccional muy claro:
+
+En primer lugar, tenemos la capa del Modelo (Model), representada principalmente por nuestra clase de datos Event. Aquí definimos la estructura pura de la información sin preocuparnos de cómo se muestra: título, fecha, descripción, categoría, URL de la imagen y el ID del usuario creador.
+
+En el extremo opuesto se encuentra la Vista (View), compuesta por nuestras pantallas en Compose (como HomeScreen o EventDetailScreen). Siguiendo las buenas prácticas, nuestras Vistas son "pasivas": no toman decisiones lógicas ni se conectan directamente a la base de datos. Su única función es "dibujar" en pantalla el estado actual que reciben y capturar las interacciones del usuario, como hacer clic en un botón.
+
+El intermediario crucial es el ViewModel, concretamente nuestra clase KaktusViewModel. Este componente actúa como el cerebro de la aplicación. Es el encargado de comunicarse con Firebase para descargar o subir datos. El ViewModel expone la información a la Vista utilizando StateFlow. Gracias a este sistema reactivo, la interfaz de usuario se actualiza automáticamente: si el ViewModel detecta un cambio en la base de datos (por ejemplo, alguien añade un voto), actualiza el estado y la Vista se redibuja instantáneamente para reflejar el cambio, ofreciendo esa experiencia de "tiempo real" que buscábamos.
+
+
 
 
