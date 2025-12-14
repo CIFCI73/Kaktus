@@ -116,7 +116,6 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(userEvents) { event ->
-                        // Riutilizziamo la card che abbiamo già!
                         EventCard(
                             event = event,
                             onVoteClick = { viewModel.onVoteClick(event) },

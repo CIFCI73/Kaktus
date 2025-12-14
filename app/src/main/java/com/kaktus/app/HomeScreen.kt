@@ -173,7 +173,7 @@ fun HomeScreen(
                             EventCard(
                                 event = event,
                                 onVoteClick = { viewModel.onVoteClick(event) },
-                                onDeleteClick = { viewModel.deleteEvent(event) },
+                                //onDeleteClick = { viewModel.deleteEvent(event) },
                                 onClick = { onEventClick(event) }
                             )
                         }
@@ -183,12 +183,11 @@ fun HomeScreen(
         }
     }
 }
-
 @Composable
 fun EventCard(
     event: Event,
     onVoteClick: () -> Unit,
-    onDeleteClick: () -> Unit,
+    onDeleteClick: (() -> Unit)? = null, // <--- 1. ORA È OPZIONALE (può essere null)
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -202,6 +201,7 @@ fun EventCard(
     ) {
         Box {
             Column {
+                // ... (Tutta la parte dell'immagine e del testo rimane UGUALE) ...
                 if (event.imageUrl.isNotEmpty()) {
                     AsyncImage(
                         model = event.imageUrl,
@@ -225,7 +225,6 @@ fun EventCard(
                         fontWeight = FontWeight.Bold,
                         color = KaktusGreen.copy(alpha = 0.7f)
                     )
-
                     Text(text = event.title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = KaktusGreen)
                     Text(text = event.date, fontSize = 14.sp, color = Color.Gray)
 
@@ -263,6 +262,7 @@ fun EventCard(
                 }
             }
 
+            // Voto (Sempre visibile)
             Surface(
                 color = KaktusLightBeige.copy(alpha = 0.9f),
                 shape = CircleShape,
@@ -275,11 +275,14 @@ fun EventCard(
                 }
             }
 
-            IconButton(
-                onClick = onDeleteClick,
-                modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(Color.White.copy(alpha = 0.7f), CircleShape)
-            ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.Red)
+            // --- 2. IL CESTINO ORA APPARE SOLO SE PASSATO ---
+            if (onDeleteClick != null) {
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.align(Alignment.TopStart).padding(8.dp).background(Color.White.copy(alpha = 0.7f), CircleShape)
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Elimina", tint = Color.Red)
+                }
             }
         }
     }
