@@ -1,7 +1,6 @@
 package com.kaktus.app
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
@@ -14,7 +13,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             KaktusTheme {
-                KaktusApp()
+                // --- QUI ABBIAMO AGGIUNTO IL CONTROLLO SPLASH ---
+                var showSplashScreen by remember { mutableStateOf(true) }
+
+                if (showSplashScreen) {
+                    SplashScreen(
+                        onAnimationFinished = {
+                            showSplashScreen = false
+                        }
+                    )
+                } else {
+                    KaktusApp() // L'app vera e propria
+                }
             }
         }
     }
@@ -27,7 +37,7 @@ fun KaktusApp() {
 
     // ESTADOS DE NAVEGACIÓN
     var isAddingEvent by remember { mutableStateOf(false) }
-    var isProfileOpen by remember { mutableStateOf(false) } // <--- NUEVO ESTADO
+    var isProfileOpen by remember { mutableStateOf(false) }
     var selectedEvent by remember { mutableStateOf<Event?>(null) }
 
     if (isUserLoggedIn) {
@@ -49,7 +59,7 @@ fun KaktusApp() {
                     isProfileOpen = false
                 },
                 onEventClick = { event ->
-                    selectedEvent = event // Abre los detalles también desde el perfil
+                    selectedEvent = event
                 }
             )
         } else if (selectedEvent != null) {
@@ -63,7 +73,7 @@ fun KaktusApp() {
             HomeScreen(
                 viewModel = viewModel,
                 onAddEventClick = { isAddingEvent = true },
-                onLogoutClick = { isProfileOpen = true }, // <--- AHORA ABRE EL PERFIL
+                onLogoutClick = { isProfileOpen = true },
                 onEventClick = { event -> selectedEvent = event }
             )
         }

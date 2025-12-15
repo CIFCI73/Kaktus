@@ -67,4 +67,5 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)      // Login
     implementation(libs.firebase.firestore) // Database
+    implementation("androidx.compose.material:material-icons-extended:1.6.0")
 }

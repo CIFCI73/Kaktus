@@ -6,7 +6,7 @@ data class Event(
     val date: String = "",
     val location: String = "",
     val description: String = "",
-    val category: String = "Otro", // <--- CAMBIADO DE "Altro" A "Otro"
+    val category: String = "Otro",
     val imageUrl: String = "",
     val mapsLink: String = "",
     val ticketLink: String = "",
